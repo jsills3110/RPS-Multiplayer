@@ -35,9 +35,15 @@ function clientIsConnected(theSessionID) {
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function(response) {
             if (response.connections.hasOwnProperty(theSessionID) === true) {
+                
+                // Since they are connected, they can play the game
+                
                 console.log("Found it!");
                 check = true;
             } else {
+
+                // If they are not found, then they should be removed from the database. Or they are trying to play the game without being a player.
+
                 console.log("Did not find it!");
                 check = false;
             }
