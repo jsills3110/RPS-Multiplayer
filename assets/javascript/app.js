@@ -22,8 +22,7 @@ var database = firebase.database();
 
 // Run this function every time the html body is loaded.
 function checkFirstVisit() {
-    // If this is the first time someone is visiting the page, then 
-    // create a new session ID for them.
+    // If this is the first time someone is visiting the page, then create a new session ID for them.
     if (sessionStorage.getItem("sessionID") === null) {
         sessionID = Math.floor(Math.random() * 100000);
         sessionStorage.setItem("sessionID", sessionID);
@@ -31,35 +30,24 @@ function checkFirstVisit() {
 }
 
 function clientIsConnected(theSessionID) {
-    // var check = false;
-    // database.ref("/connections").once('value', function (snapshot) {
-    //     console.log("SessionID: " + theSessionID);
-    //     console.log(snapshot);
-    //     console.log("HasChild: " + snapshot.hasChild("/" + theSessionID));
-    //     if (snapshot.hasChild("/" + theSessionID)) {
-    //         console.log("Got into true block");
-    //         check = true;
-    //     } else {
-    //         console.log("Got into false block");
-    //         check = false;
-    //     }
-    // }).then(function () {
-    //     return check;
-    // });
+    var check = false;
 
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function(response) {
-            console.log(response);
+            if (response.connections.hasOwnProperty(theSessionID) === true) {
+                console.log("Found it!");
+                check = true;
+            } else {
+                console.log("Did not find it!");
+                check = false;
+            }
         });
+    return check;
 }
 
-// -------------------------------------------------------------- (CRITICAL - BLOCK) --------------------------- //
 // connectionsRef references a specific location in our database.
-// All of our connections will be stored in this directory.
 var connectionsRef = database.ref("/connections");
 
-// '.info/connected' is a special location provided by Firebase that is updated every time
-// the client's connection state changes.
 // '.info/connected' is a boolean value, true if the client is connected and false if they are not.
 var connectedRef = database.ref(".info/connected");
 
