@@ -27,8 +27,30 @@ function checkFirstVisit() {
     if (sessionStorage.getItem("sessionID") === null) {
         sessionID = Math.floor(Math.random() * 100000);
         sessionStorage.setItem("sessionID", sessionID);
-        console.log(sessionID);
     }
+}
+
+function clientIsConnected(theSessionID) {
+    // var check = false;
+    // database.ref("/connections").once('value', function (snapshot) {
+    //     console.log("SessionID: " + theSessionID);
+    //     console.log(snapshot);
+    //     console.log("HasChild: " + snapshot.hasChild("/" + theSessionID));
+    //     if (snapshot.hasChild("/" + theSessionID)) {
+    //         console.log("Got into true block");
+    //         check = true;
+    //     } else {
+    //         console.log("Got into false block");
+    //         check = false;
+    //     }
+    // }).then(function () {
+    //     return check;
+    // });
+
+    $.get('https://click-counter-72785.firebaseio.com/.json')
+        .then(function(response) {
+            console.log(response);
+        });
 }
 
 // -------------------------------------------------------------- (CRITICAL - BLOCK) --------------------------- //
@@ -44,14 +66,18 @@ var connectedRef = database.ref(".info/connected");
 // When the client's connection state changes...
 connectedRef.on("value", function (snap) {
 
-    console.log(snap.val());
+    // console.log(snap.val());
 
     // If they are connected...
     if (snap.val()) {
 
+        sessionID = sessionStorage.getItem("sessionID");
+
         // Add user to the connections list.
         var con = database.ref("/connections/" + sessionID).push(true);
-        // var con = connectionsRef().push(true);
+
+        console.log("New session ID: " + sessionID);
+        console.log("New session ID, is connected: " + clientIsConnected(sessionID));
 
         // Remove user from the connection list when they disconnect.
         con.onDisconnect().remove();
@@ -105,7 +131,7 @@ player2Button.on("click", function (event) {
 database.ref('users').on("child_added", function (snapshot) {
     // storing the snapshot.val() in a variable for convenience
     var sv = snapshot.val();
-    console.log(snapshot.val());
+    // console.log(snapshot.val());
 
     // Console.loging the last user's data
     // console.log(sv[1].playername);
