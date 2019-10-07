@@ -19,15 +19,18 @@
     <title>Rock-Paper-Scissors Battle</title>
 </head>
 
-<body>
+<body onload="checkFirstVisit()">
 
     <div class="container min-vh-100">
+        <!--The title row-->
         <div class="row">
             <div class="col border">
                 <h1 class="text-center">Rock Paper Scissors</h1>
             </div>
         </div>
+        <!--The player and deck row-->
         <div class="row">
+            <!--Player one-->
             <div class="col-3 border" id="player1">
                 <h2 class="text-center">Player 1</h2>
                 <form>
@@ -38,9 +41,11 @@
                     <button type="submit" class="btn btn-primary" id="player1-name-button">Submit</button>
                 </form>
             </div>
+            <!--Deck-->
             <div class="col-6 border" id="deck">
                 <h2 class="text-center">Deck</h2>
             </div>
+            <!--Player two-->
             <div class="col-3 border" id="player2">
                 <h2 class="text-center">Player 2</h2>
                 <form>
@@ -52,6 +57,7 @@
                 </form>
             </div>
         </div>
+        <!--The chat box row-->
         <div class="row">
             <div class="col border">
                 <h1 class="text-center">Chat Area</h1>

@@ -1,4 +1,4 @@
-var sessionIDCount = 0;
+var sessionID = 0;
 
 var player1Div = $("#player1");
 var player2Div = $("#player2");
@@ -18,24 +18,18 @@ var firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
 var database = firebase.database();
 
-// If sessionIDCount does not exist in the database yet, then add it.
-var ref = firebase.database().ref();
-ref.once("value")
-    .then(function (snapshot) {
-        if (!snapshot.child("sessionIDCount").exists()) {
-            database.ref().set({
-                sessionIDCount: sessionIDCount
-            });
-        }
-    });
-
-database.ref().once('value').then(function(snapshot) {
-    sessionIDCount = snapshot.val().sessionIDCount;
-    console.log(sessionIDCount);
-});
+// Run this function every time the html body is loaded.
+function checkFirstVisit() {
+    // If this is the first time someone is visiting the page, then 
+    // create a new session ID for them.
+    if (sessionStorage.getItem("sessionID") === null) {
+        sessionID = Math.floor(Math.random() * 100000);
+        sessionStorage.setItem("sessionID", sessionID);
+        console.log(sessionID);
+    }
+}
 
 // -------------------------------------------------------------- (CRITICAL - BLOCK) --------------------------- //
 // connectionsRef references a specific location in our database.
@@ -52,20 +46,12 @@ connectedRef.on("value", function (snap) {
 
     console.log(snap.val());
 
-    // If they are connected..
+    // If they are connected...
     if (snap.val()) {
 
         // Add user to the connections list.
-        var con = connectionsRef.push(true);
-
-        // Create a new sessionID for the user.
-        sessionStorage.setItem("sessionID", sessionIDCount);
-
-        sessionIDCount++;
-
-        database.ref().set({
-            sessionIDCount: sessionIDCount
-        })
+        var con = database.ref("/connections/" + sessionID).push(true);
+        // var con = connectionsRef().push(true);
 
         // Remove user from the connection list when they disconnect.
         con.onDisconnect().remove();
@@ -87,7 +73,8 @@ player1Button.on("click", function (event) {
         playerwins: 0,
         playerlosses: 0,
         playerchoice: "none",
-        playernumber: 1
+        playernumber: 1,
+        playersessionID: sessionID
     });
 
     player1Button.addClass("disabled");
@@ -106,7 +93,8 @@ player2Button.on("click", function (event) {
         playerwins: 0,
         playerlosses: 0,
         playerchoice: "none",
-        playernumber: 2
+        playernumber: 2,
+        playersessionID: sessionID
     });
 
     player2Button.addClass("disabled");
