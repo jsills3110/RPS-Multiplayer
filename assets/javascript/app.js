@@ -51,7 +51,23 @@ connectedRef.on("value", function (snap) {
         console.log("New session ID: " + sessionID);
 
         // Remove user from the connection list when they disconnect.
-        con.onDisconnect().remove();
+        con.onDisconnect().remove(function (snapshot) {
+            $.get('https://click-counter-72785.firebaseio.com/.json')
+                .then(function (response) {
+                    console.log(response);
+                    if (response.users !== undefined) {
+                        if (response.users.hasOwnProperty("1") === true) {
+                            if (response.users[1].playersessionID === sessionID) {
+                                response.users.child("1").remove();
+                            }
+                        } else if (response.users.hasOwnProperty("2") === true) {
+                            if (response.users[2].playersessionID === sessionID) {
+                                response.users.child("2").remove();
+                            }
+                        }
+                    }
+                });
+        });
     }
 });
 
@@ -74,11 +90,11 @@ player1Button.on("click", function (event) {
         playersessionID: sessionID
     });
 
-    player1Button.addClass("disabled");
-    player1Button.attr("disabled", true);
-    $("#player1-name").attr("readonly", true);
+    // player1Button.addClass("disabled");
+    // player1Button.attr("disabled", true);
+    // $("#player1-name").attr("readonly", true);
 
-    addRPSButtons(1);
+    // addRPSButtons(1);
 });
 
 // When player 2 enters their name...
@@ -96,11 +112,11 @@ player2Button.on("click", function (event) {
         playersessionID: sessionID
     });
 
-    player2Button.addClass("disabled");
-    player2Button.attr("disabled", true);
-    $("#player2-name").attr("readonly", true);
+    // player2Button.addClass("disabled");
+    // player2Button.attr("disabled", true);
+    // $("#player2-name").attr("readonly", true);
 
-    addRPSButtons(2);
+    // addRPSButtons(2);
 });
 
 // When a player enters their name, show the rock paper scissor options.
@@ -120,35 +136,71 @@ function addRPSButtons(thePlayer) {
     }
 }
 
+// If any of the player 1 options are clicked...
 $(document).on("click", "#choice1", function () {
     var choiceClicked = $(this);
+    sessionID = sessionStorage.getItem("sessionID");
 
+    $.get('https://click-counter-72785.firebaseio.com/.json')
+        .then(function (response) {
+
+            console.log(response);
+
+            if (response.connections.hasOwnProperty(sessionID) === true) {
+
+                // console.log(response.users);
+                // Since they are connected, they can play the game
+                console.log("Found the user!");
+
+                if (response.users[1].playersessionID === sessionID) {
+                    console.log("This is the correct player.");
+                    database.ref('users/1/playerchoice').set(choiceClicked.attr("value"));
+                } else {
+                    console.log("This is not the correct player.");
+                }
+            } else {
+
+                // If they are not found, then they should be removed from the database.
+                // Or they are trying to play the game without being a player.
+                console.log("Did not find the user!");
+            }
+        });
+});
+
+// If any of the player 2 options are clicked...
+$(document).on("click", "#choice2", function () {
+    var choiceClicked = $(this);
     sessionID = sessionStorage.getItem("sessionID");
 
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function (response) {
             if (response.connections.hasOwnProperty(sessionID) === true) {
 
-                console.log(response.users);
+                // console.log(response.users);
+                // Since they are connected, they can play the game
+                console.log("Found the user!");
 
-                if (response.users[1].playersessionID === sessionID) {
+                if (response.users[2].playersessionID === sessionID) {
                     console.log("This is the correct player.");
+                    database.ref('users/2/playerchoice').set(choiceClicked.attr("value"));
                 } else {
                     console.log("This is not the correct player.");
                 }
-
-                // Since they are connected, they can play the game
-
-                // console.log("Found it!");
             } else {
 
-                // If they are not found, then they should be removed from the database. Or they are trying to play the game without being a player.
-
-                // console.log("Did not find it!");
+                // If they are not found, then they should be removed from the database.
+                // Or they are trying to play the game without being a player.
+                console.log("Did not find the user!");
             }
         });
 });
 
+function removeUser() {
+
+}
+
+// When a new player is added to the database, lock in their name and add the rock, paper,
+// scissors button options to the screen.
 database.ref('users').on("child_added", function (snapshot) {
     // storing the snapshot.val() in a variable for convenience
     var player = snapshot.val();
