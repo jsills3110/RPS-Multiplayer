@@ -84,9 +84,9 @@ player2Button.on("click", function (event) {
 
 // When a player enters their name, show the rock paper scissor options.
 function addRPSButtons(thePlayer) {
-    var rock = $("<button class='btn btn-primary' id='choice" + thePlayer + "' value='rock'>Rock</button>");
-    var paper = $("<button class='btn btn-primary' id='choice" + thePlayer + "' value='paper'>Paper</button>");
-    var scissors = $("<button class='btn btn-primary' id='choice" + thePlayer + "' value='scissors'>Scissors</button>");
+    var rock = $("<button class='btn btn-primary choice" + thePlayer + "' value='rock'>Rock</button>");
+    var paper = $("<button class='btn btn-primary choice" + thePlayer + "' value='paper'>Paper</button>");
+    var scissors = $("<button class='btn btn-primary choice" + thePlayer + "' value='scissors'>Scissors</button>");
 
     if (thePlayer === 1) {
         player1Div.append(rock);
@@ -100,33 +100,33 @@ function addRPSButtons(thePlayer) {
 }
 
 // If any of the player 1 options are clicked...
-$(document).on("click", "#choice1", function () {
+$(document).on("click", ".choice1", function () {
     var choiceClicked = $(this);
     sessionID = sessionStorage.getItem("sessionID");
 
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function (response) {
             if (response.users[1].playersessionID === sessionID) {
-                console.log("This is the correct player.");
                 database.ref('users/1/playerchoice').set(choiceClicked.attr("value"));
-            } else {
-                console.log("This is not the correct player.");
+                $(".choice1").addClass("disabled");
+                $(".choice1").attr("disabled", true);
+                player1Div.append("<h6>You have chosen " + choiceClicked.attr("value") + ". Please wait.</h6>");
             }
         });
 });
 
 // If any of the player 2 options are clicked...
-$(document).on("click", "#choice2", function () {
+$(document).on("click", ".choice2", function () {
     var choiceClicked = $(this);
     sessionID = sessionStorage.getItem("sessionID");
 
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function (response) {
             if (response.users[2].playersessionID === sessionID) {
-                console.log("This is the correct player.");
                 database.ref('users/2/playerchoice').set(choiceClicked.attr("value"));
-            } else {
-                console.log("This is not the correct player.");
+                $(".choice2").addClass("disabled");
+                $(".choice2").attr("disabled", true);
+                player2Div.append("<h6>You have chosen " + choiceClicked.attr("value") + ". Please wait.</h6>");
             }
         });
 });
@@ -158,6 +158,25 @@ database.ref('users').on("child_added", function (snapshot) {
             player2Div.append(quitButton);
         }
     }
+    // Handle the errors
+}, function (errorObject) {
+    console.log("Errors handled: " + errorObject.code);
+});
+
+database.ref('users').on("value", function (snapshot) {
+    var users = snapshot.val();
+
+    if (users !== null && users[1] !== undefined && users[2] !== undefined) {
+        var player1Choice = users[1].playerchoice;
+        var player2Choice = users[2].playerchoice;
+    
+        if (player1Choice !== "none" && player2Choice !== "none") {
+            console.log("Both players have chosen.");
+        } else {
+            console.log("Both players have not chosen yet.");
+        }
+    }
+
     // Handle the errors
 }, function (errorObject) {
     console.log("Errors handled: " + errorObject.code);
