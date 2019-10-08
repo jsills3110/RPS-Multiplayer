@@ -29,28 +29,6 @@ function checkFirstVisit() {
     }
 }
 
-function clientIsConnected(theSessionID) {
-    var check = false;
-
-    $.get('https://click-counter-72785.firebaseio.com/.json')
-        .then(function(response) {
-            if (response.connections.hasOwnProperty(theSessionID) === true) {
-                
-                // Since they are connected, they can play the game
-                
-                console.log("Found it!");
-                check = true;
-            } else {
-
-                // If they are not found, then they should be removed from the database. Or they are trying to play the game without being a player.
-
-                console.log("Did not find it!");
-                check = false;
-            }
-        });
-    return check;
-}
-
 // connectionsRef references a specific location in our database.
 var connectionsRef = database.ref("/connections");
 
@@ -71,7 +49,6 @@ connectedRef.on("value", function (snap) {
         var con = database.ref("/connections/" + sessionID).push(true);
 
         console.log("New session ID: " + sessionID);
-        console.log("New session ID, is connected: " + clientIsConnected(sessionID));
 
         // Remove user from the connection list when they disconnect.
         con.onDisconnect().remove();
@@ -100,6 +77,8 @@ player1Button.on("click", function (event) {
     player1Button.addClass("disabled");
     player1Button.attr("disabled", true);
     $("#player1-name").attr("readonly", true);
+
+    addRPSButtons(1);
 });
 
 // When player 2 enters their name...
@@ -120,31 +99,74 @@ player2Button.on("click", function (event) {
     player2Button.addClass("disabled");
     player2Button.attr("disabled", true);
     $("#player2-name").attr("readonly", true);
+
+    addRPSButtons(2);
+});
+
+// When a player enters their name, show the rock paper scissor options.
+function addRPSButtons(thePlayer) {
+    var rock = $("<button class='btn btn-primary' id='choice" + thePlayer + "' value='rock'>Rock</button>");
+    var paper = $("<button class='btn btn-primary' id='choice" + thePlayer + "' value='paper'>Paper</button>");
+    var scissors = $("<button class='btn btn-primary' id='choice" + thePlayer + "' value='scissors'>Scissors</button>");
+
+    if (thePlayer === 1) {
+        player1Div.append(rock);
+        player1Div.append(paper);
+        player1Div.append(scissors);
+    } else {
+        player2Div.append(rock);
+        player2Div.append(paper);
+        player2Div.append(scissors);
+    }
+}
+
+$(document).on("click", "#choice1", function () {
+    var choiceClicked = $(this);
+
+    sessionID = sessionStorage.getItem("sessionID");
+
+    $.get('https://click-counter-72785.firebaseio.com/.json')
+        .then(function (response) {
+            if (response.connections.hasOwnProperty(sessionID) === true) {
+
+                console.log(response.users);
+
+                if (response.users[1].playersessionID === sessionID) {
+                    console.log("This is the correct player.");
+                } else {
+                    console.log("This is not the correct player.");
+                }
+
+                // Since they are connected, they can play the game
+
+                // console.log("Found it!");
+            } else {
+
+                // If they are not found, then they should be removed from the database. Or they are trying to play the game without being a player.
+
+                // console.log("Did not find it!");
+            }
+        });
 });
 
 database.ref('users').on("child_added", function (snapshot) {
     // storing the snapshot.val() in a variable for convenience
-    var sv = snapshot.val();
-    // console.log(snapshot.val());
+    var player = snapshot.val();
+    console.log(snapshot.val());
 
-    // Console.loging the last user's data
-    // console.log(sv[1].playername);
-    // console.log(sv[1].playerwins);
-    // console.log(sv[1].playerlosses);
-    // console.log(sv[1].playerchoice);
-    // console.log(sv[1].playernumber);
-
-    // console.log(sv[2].playername);
-    // console.log(sv[2].playerwins);
-    // console.log(sv[2].playerlosses);
-    // console.log(sv[2].playerchoice);
-    // console.log(sv[2].playernumber);
-
-    // // Change the HTML to reflect
-    // $("#name-display").text(sv.name);
-    // $("#email-display").text(sv.email);
-    // $("#age-display").text(sv.age);
-    // $("#comment-display").text(sv.comment);
+    if (player.playernumber === 1) {
+        $("#player1-name").val(player.playername);
+        $("#player1-name").attr("readonly", true);
+        player1Button.addClass("disabled");
+        player1Button.attr("disabled", true);
+        addRPSButtons(1);
+    } else {
+        $("#player2-name").val(player.playername);
+        $("#player2-name").attr("readonly", true);
+        player2Button.addClass("disabled");
+        player2Button.attr("disabled", true);
+        addRPSButtons(2);
+    }
 
     // Handle the errors
 }, function (errorObject) {
