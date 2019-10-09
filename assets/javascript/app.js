@@ -3,6 +3,7 @@ var player1Div = $("#player1");
 var player2Div = $("#player2");
 var player1Button = $("#player1-name-button");
 var player2Button = $("#player2-name-button");
+var deckDiv = $("#deck");
 
 // Firebase configuration
 var firebaseConfig = {
@@ -39,7 +40,6 @@ connectedRef.on("value", function (snap) {
 
     // If they are connected...
     if (snap.val()) {
-
         sessionID = sessionStorage.getItem("sessionID");
 
         // Add user to the connections list.
@@ -104,6 +104,7 @@ $(document).on("click", ".choice1", function () {
     var choiceClicked = $(this);
     sessionID = sessionStorage.getItem("sessionID");
 
+    // Add the choice to the player 1 data
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function (response) {
             if (response.users[1].playersessionID === sessionID) {
@@ -120,6 +121,7 @@ $(document).on("click", ".choice2", function () {
     var choiceClicked = $(this);
     sessionID = sessionStorage.getItem("sessionID");
 
+    // Add the choice to the player 2 data
     $.get('https://click-counter-72785.firebaseio.com/.json')
         .then(function (response) {
             if (response.users[2].playersessionID === sessionID) {
@@ -132,7 +134,7 @@ $(document).on("click", ".choice2", function () {
 });
 
 // When a new player is added to the database, lock in their name and add the rock, paper,
-// scissors button options to the screen.
+// scissors, and quit button options to the screen.
 database.ref('users').on("child_added", function (snapshot) {
     var player = snapshot.val();
     sessionID = sessionStorage.getItem("sessionID");
@@ -163,21 +165,87 @@ database.ref('users').on("child_added", function (snapshot) {
     console.log("Errors handled: " + errorObject.code);
 });
 
+// When the user data changes, we want to check if the players have chosen rock, paper, or scissors
+// yet. If they both have, then evaluate their choices and see who wins.
 database.ref('users').on("value", function (snapshot) {
     var users = snapshot.val();
 
     if (users !== null && users[1] !== undefined && users[2] !== undefined) {
         var player1Choice = users[1].playerchoice;
         var player2Choice = users[2].playerchoice;
-    
+
         if (player1Choice !== "none" && player2Choice !== "none") {
             console.log("Both players have chosen.");
+            deckDiv.append("<h4>Player 1 chose: " + player1Choice + "</h4>");
+            deckDiv.append("<h4>Player 2 chose: " + player2Choice + "</h4>");
+
+            if (player1Choice === player2Choice) {
+                deckDiv.append("<h4>It was a tie!</h4>");
+            } else {
+                var didPlayer1Win = checkWinCondition(player1Choice, player2Choice);
+                console.log("Did player 1 win: " + didPlayer1Win);
+                if (didPlayer1Win) {
+                    deckDiv.append("<h4>Player 1 won!</h4>");
+                    modifyWins(1);
+                    modifyLosses(2);
+                } else {
+                    deckDiv.append("<h4>Player 2 won!</h4>");
+                    modifyWins(2);
+                    modifyLosses(1);
+                }
+            }
+            clearChoices();
+            // resetGameBoard();
         } else {
             console.log("Both players have not chosen yet.");
         }
     }
-
     // Handle the errors
 }, function (errorObject) {
     console.log("Errors handled: " + errorObject.code);
 });
+
+// Check to see who won the round.
+function checkWinCondition(player1, player2) {
+    if ((player1 === "rock" && player2 === "scissors") || (player1 === "scissors" && player2 === "paper") || (player1 === "paper" && player2 === "rock")) {
+        console.log("Player 1 won.");
+        return true;
+    } else {
+        console.log("Player 2 won.");
+        return false;
+    }
+}
+
+// Add 1 to the win count of the specified player.
+function modifyWins(thePlayer) {
+
+    // Get the current wins and add one to it.
+    $.get('https://click-counter-72785.firebaseio.com/.json')
+        .then(function (response) {
+            var wins = response.users[thePlayer].playerwins;
+            wins++;
+            database.ref('users/' + thePlayer + '/playerwins').set(wins);
+        });
+}
+
+// Add 1 to the loss count of the specified player.
+function modifyLosses(thePlayer) {
+
+    // Get the current losses and add one to it.
+    $.get('https://click-counter-72785.firebaseio.com/.json')
+        .then(function (response) {
+            var losses = response.users[thePlayer].playerlosses;
+            losses++;
+            database.ref('users/' + thePlayer + '/playerlosses').set(losses);
+        });
+}
+
+// Clear the player choices so they can play again.
+function clearChoices() {
+    database.ref('users/1/playerchoice').set("none");
+    database.ref('users/2/playerchoice').set("none");
+}
+
+// function resetGameBoard() {
+
+// }
