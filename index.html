@@ -25,30 +25,39 @@
         <!--The title row-->
         <div class="row">
             <div class="col border">
-                <h1 class="text-center">Rock Paper Scissors</h1>
+                <h1 class="text-center">RPS Multiplayer</h1>
             </div>
         </div>
         <!--The player and deck row-->
         <div class="row">
             <!--Player one-->
-            <div class="col-3 border" id="player1">
+            <div class="col-3 border text-center" id="player1">
                 <h2 class="text-center">Player 1</h2>
+                <h5 class="text-center">Wins: <span id="player1-wins"></span></h3>
+                <h5 class="text-center">Losses: <span id="player1-losses"></span></h3>
                 <form>
                     <div class="form-group">
                         <label for="player1-name">Name</label>
                         <input type="text" class="form-control" id="player1-name" placeholder="Name">
                     </div>
-                    <button type="submit" class="btn btn-primary" id="player1-name-button">Submit</button>
+                    <button type="submit" class="btn btn-primary m-1" id="player1-name-button">Submit</button>
                 </form>
-                <div id="player1-content"></div>
+                <div class="text-center" id="player1-content"></div>
             </div>
             <!--Deck-->
-            <div class="col-6 border" id="deck">
-                <h2 class="text-center">Deck</h2>
+            <div class="col-6 border text-center">
+                <h2 class="text-center">Choose Rock, Paper, or Scissors</h2>
+                <div class="row">
+                    <div class="col-6" id="player1-img"></div>
+                    <div class="col" id="player2-img"></div>
+                </div>
+                <div id="deck"></div>
             </div>
             <!--Player two-->
-            <div class="col-3 border" id="player2">
+            <div class="col-3 border text-center" id="player2">
                 <h2 class="text-center">Player 2</h2>
+                <h5 class="text-center">Wins: <span id="player2-wins"></span></h3>
+                <h5 class="text-center">Losses: <span id="player2-losses"></span></h3>
                 <form>
                     <div class="form-group">
                         <label for="player2-name">Name</label>
@@ -56,7 +65,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary" id="player2-name-button">Submit</button>
                 </form>
-                <div id="player2-content"></div>
+                <div class="text-center" id="player2-content"></div>
             </div>
         </div>
         <!--The chat box row-->
