@@ -1,6 +1,8 @@
 var sessionID = 0;
 var player1Div = $("#player1");
 var player2Div = $("#player2");
+var player1Content = $("#player1-content");
+var player2Content = $("#player2-content");
 var player1Button = $("#player1-name-button");
 var player2Button = $("#player2-name-button");
 var deckDiv = $("#deck");
@@ -89,13 +91,13 @@ function addRPSButtons(thePlayer) {
     var scissors = $("<button class='btn btn-primary choice" + thePlayer + "' value='scissors'>Scissors</button>");
 
     if (thePlayer === 1) {
-        player1Div.append(rock);
-        player1Div.append(paper);
-        player1Div.append(scissors);
+        player1Content.append(rock);
+        player1Content.append(paper);
+        player1Content.append(scissors);
     } else {
-        player2Div.append(rock);
-        player2Div.append(paper);
-        player2Div.append(scissors);
+        player2Content.append(rock);
+        player2Content.append(paper);
+        player2Content.append(scissors);
     }
 }
 
@@ -111,7 +113,7 @@ $(document).on("click", ".choice1", function () {
                 database.ref('users/1/playerchoice').set(choiceClicked.attr("value"));
                 $(".choice1").addClass("disabled");
                 $(".choice1").attr("disabled", true);
-                player1Div.append("<h6>You have chosen " + choiceClicked.attr("value") + ". Please wait.</h6>");
+                player1Content.append("<h6>You have chosen " + choiceClicked.attr("value") + ". Please wait.</h6>");
             }
         });
 });
@@ -128,7 +130,7 @@ $(document).on("click", ".choice2", function () {
                 database.ref('users/2/playerchoice').set(choiceClicked.attr("value"));
                 $(".choice2").addClass("disabled");
                 $(".choice2").attr("disabled", true);
-                player2Div.append("<h6>You have chosen " + choiceClicked.attr("value") + ". Please wait.</h6>");
+                player2Content.append("<h6>You have chosen " + choiceClicked.attr("value") + ". Please wait.</h6>");
             }
         });
 });
@@ -175,6 +177,7 @@ database.ref('users').on("value", function (snapshot) {
         var player2Choice = users[2].playerchoice;
 
         if (player1Choice !== "none" && player2Choice !== "none") {
+            deckDiv.empty();
             console.log("Both players have chosen.");
             deckDiv.append("<h4>Player 1 chose: " + player1Choice + "</h4>");
             deckDiv.append("<h4>Player 2 chose: " + player2Choice + "</h4>");
@@ -195,7 +198,7 @@ database.ref('users').on("value", function (snapshot) {
                 }
             }
             clearChoices();
-            // resetGameBoard();
+            resetGameBoard();
         } else {
             console.log("Both players have not chosen yet.");
         }
@@ -246,6 +249,21 @@ function clearChoices() {
     database.ref('users/2/playerchoice').set("none");
 }
 
-// function resetGameBoard() {
+function resetGameBoard() {
+    sessionID = sessionStorage.getItem("sessionID");
 
-// }
+    // Retrieve the sessionIDs of the players.
+    $.get('https://click-counter-72785.firebaseio.com/.json')
+        .then(function (response) {
+            var player1ID = response.users[1].playersessionID;
+            var player2ID = response.users[2].playersessionID;
+
+            if (sessionID === player1ID) {
+                player1Content.empty();
+                addRPSButtons(1);
+            } else if (sessionID === player2ID) {
+                player2Content.empty();
+                addRPSButtons(2);
+            }
+        });
+}
