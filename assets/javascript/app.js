@@ -178,7 +178,6 @@ database.ref('users').on("value", function (snapshot) {
 
         if (player1Choice !== "none" && player2Choice !== "none") {
             deckDiv.empty();
-            console.log("Both players have chosen.");
             deckDiv.append("<h4>Player 1 chose: " + player1Choice + "</h4>");
             deckDiv.append("<h4>Player 2 chose: " + player2Choice + "</h4>");
 
@@ -186,7 +185,6 @@ database.ref('users').on("value", function (snapshot) {
                 deckDiv.append("<h4>It was a tie!</h4>");
             } else {
                 var didPlayer1Win = checkWinCondition(player1Choice, player2Choice);
-                console.log("Did player 1 win: " + didPlayer1Win);
                 if (didPlayer1Win) {
                     deckDiv.append("<h4>Player 1 won!</h4>");
                     modifyWins(1);
@@ -199,9 +197,10 @@ database.ref('users').on("value", function (snapshot) {
             }
             clearChoices();
             resetGameBoard();
-        } else {
-            console.log("Both players have not chosen yet.");
         }
+        // } else {
+        //     console.log("Both players have not chosen yet.");
+        // }
     }
     // Handle the errors
 }, function (errorObject) {
@@ -227,7 +226,7 @@ function modifyWins(thePlayer) {
         .then(function (response) {
             var wins = response.users[thePlayer].playerwins;
             wins++;
-            database.ref('users/' + thePlayer + '/playerwins').set(wins);
+            database.ref('users/' + thePlayer + '/playerwins').update(wins);
         });
 }
 
@@ -239,7 +238,7 @@ function modifyLosses(thePlayer) {
         .then(function (response) {
             var losses = response.users[thePlayer].playerlosses;
             losses++;
-            database.ref('users/' + thePlayer + '/playerlosses').set(losses);
+            database.ref('users/' + thePlayer + '/playerlosses').update(losses);
         });
 }
 
@@ -261,7 +260,8 @@ function resetGameBoard() {
             if (sessionID === player1ID) {
                 player1Content.empty();
                 addRPSButtons(1);
-            } else if (sessionID === player2ID) {
+            }
+            if (sessionID === player2ID) {
                 player2Content.empty();
                 addRPSButtons(2);
             }
